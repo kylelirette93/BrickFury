@@ -19,7 +19,7 @@ public class Ball : MonoBehaviour
         transform.position += desiredDirection * speed * Time.deltaTime;
 
         RaycastHit hit;
-        Physics.Raycast(transform.position, desiredDirection, out hit, 0.1f);
+        Physics.Raycast(transform.position, desiredDirection, out hit, 0.2f);
 
         if (hit.collider != null)
         {
