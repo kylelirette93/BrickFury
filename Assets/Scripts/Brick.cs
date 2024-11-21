@@ -5,51 +5,23 @@ using UnityEngine;
 public class Brick : MonoBehaviour
 {
     int hitCount = 0;
-    bool hasHit = false;
 
-    private void Start()
+    public void HitBrick()
     {
-        // Set the color of the brick to white.
-        GetComponent<Renderer>().material.color = Color.green;
-    }
+        hitCount++;
 
-
-
-    private void Update()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, Vector3.down, out hit, 0.2f))
+        if (hitCount == 1)
         {
-            if (hit.collider != null && !hasHit)
-            {
-
-                hitCount++;
-                hasHit = true;
-
-                if (hitCount == 1)
-                {
-                    GetComponent<Renderer>().material.color = Color.yellow;
-                    Invoke("DelayedReset", 0.2f);
-                }
-                else if (hitCount == 2)
-                {
-                    GetComponent<Renderer>().material.color = Color.red;
-                    Invoke("DelayedReset", 0.2f);
-                }
-                else if (hitCount >= 3)
-                {
-                    Destroy(gameObject);
-                }
-            }
-            
+            GetComponent<Renderer>().material.color = Color.yellow;
         }
-
+        else if (hitCount == 2)
+        {
+            GetComponent<Renderer>().material.color = Color.red;
+        }
+        else if (hitCount == 3)
+        {
+            Destroy(gameObject);
+        }
     }
-
-    void DelayedReset()
-    {
-        hasHit = false;
-    }
-        
-      
 }
+
