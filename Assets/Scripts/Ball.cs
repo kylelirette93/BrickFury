@@ -83,8 +83,12 @@ public class Ball : MonoBehaviour
 
                 // Get the paddle's width.
                 float paddleWidth = paddle.localScale.x;
-                // Get the hit offset based on the paddle's width.
-                float hitOffset = (hit.point.x - paddle.position.x) / (paddleWidth / 2);
+
+                // Get distance from the hit point to the paddle's center.
+                float relativePosition = hit.point.x - paddle.position.x;
+    
+                // Get the normalized hit offset, by dividing by half the paddle width.
+                float hitOffset = relativePosition / (paddleWidth / 2);
 
                 // Reflect the ball.
                 Vector3 collisionNormal = Vector3.up;
