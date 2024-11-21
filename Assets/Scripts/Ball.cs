@@ -17,6 +17,15 @@ public class Ball : MonoBehaviour
     Vector3 desiredDirection;
     Vector3 lastHitPoint;
 
+    public float shakeDuration = 0.1f;
+    public float shakeMagnitude = 0.1f;
+    private Transform cameraTransform;
+    private Vector3 originalCameraPosition;
+
+    private bool isShaking = false;
+    private float shakeCooldown = 0.2f;
+    private float lastShakeTime = 0f;
+
 
 
 
@@ -27,6 +36,10 @@ public class Ball : MonoBehaviour
 
         // Initial z position.
         initialZPos = transform.position.z;
+
+        // Get the camera transform.
+        cameraTransform = Camera.main.transform;
+        originalCameraPosition = cameraTransform.localPosition;
     }
 
     private void OnDrawGizmos()
@@ -45,7 +58,7 @@ public class Ball : MonoBehaviour
         // Apply contraint to the ball's z position.
         transform.position = new Vector3(transform.position.x, transform.position.y, initialZPos);
 
-       
+
         RaycastHit hit;
         if (Physics.SphereCast(transform.position, radius, desiredDirection, out hit, movement.magnitude + radius))
         {
@@ -63,6 +76,12 @@ public class Ball : MonoBehaviour
                 }
 
                 transform.position = hit.point + hit.normal * radius;
+
+                if (Time.time - lastShakeTime >= shakeCooldown)
+                {
+                    StartCoroutine(ShakeScreen());
+                    lastShakeTime = Time.time;
+                }
             }
             else if (hit.collider.CompareTag(brickTag))
             {
@@ -76,6 +95,12 @@ public class Ball : MonoBehaviour
 
                 hit.collider.GetComponent<Brick>().HitBrick();
                 transform.position = hit.point + hit.normal * radius;
+
+                if (Time.time - lastShakeTime >= shakeCooldown)
+                {
+                    StartCoroutine(ShakeScreen());
+                    lastShakeTime = Time.time;
+                }
             }
             else if (hit.collider.CompareTag(playerTag))
             {
@@ -106,7 +131,33 @@ public class Ball : MonoBehaviour
 
                 lastHitPoint = hit.point;
                 transform.position = hit.point + hit.normal * radius;
+                if (Time.time - lastShakeTime >= shakeCooldown)
+                {
+                    StartCoroutine(ShakeScreen());
+                    lastShakeTime = Time.time;
+                }
             }
         }
+    }
+
+    IEnumerator ShakeScreen()
+    {
+        isShaking = true;
+        float elapsed = 0.0f;
+
+        while (elapsed < shakeDuration)
+        {
+            float x = Random.Range(-1, 1f) * shakeMagnitude;
+            float y = Random.Range(-1, 1f) * shakeMagnitude;
+
+            cameraTransform.localPosition = new Vector3(x, originalCameraPosition.y, originalCameraPosition.z);
+
+            elapsed += Time.deltaTime;
+
+            yield return null;
+        }
+
+        cameraTransform.localPosition = originalCameraPosition;
+        isShaking = false;
     }
 }

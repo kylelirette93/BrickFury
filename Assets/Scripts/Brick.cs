@@ -16,7 +16,7 @@ public class Brick : MonoBehaviour
     {
         hitCount++;
         brickMaterial.color = Color.white;
-        Invoke("ChangeMaterialColor", 0.1f);      
+        Invoke("ChangeMaterialColor", 0.05f);      
     }
 
     void ChangeMaterialColor()
@@ -28,6 +28,7 @@ public class Brick : MonoBehaviour
         else if (hitCount == 2)
         {
             brickMaterial.color = Color.red;
+            Debug.Log("Color is: " + brickMaterial.color);
         }
         else if (hitCount == 3)
         {
