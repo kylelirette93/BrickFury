@@ -42,11 +42,7 @@ public class Ball : MonoBehaviour
         originalCameraPosition = cameraTransform.localPosition;
     }
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, radius);
-    }
+    
 
     void Update()
     {
