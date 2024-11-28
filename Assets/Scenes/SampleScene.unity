@@ -2334,6 +2334,8 @@ MonoBehaviour:
   speed: 7
   shakeDuration: 0.2
   shakeMagnitude: 0.05
+  hitEmissionColor: {r: 1, g: 0, b: 0, a: 0}
+  emissionIntensity: 5
 --- !u!95 &637064404
 Animator:
   serializedVersion: 5
@@ -4421,7 +4423,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementSpeed: 10
-  hitEmissionColor: {r: 0.75, g: 0.9528985, b: 1, a: 1}
+  hitEmissionColor: {r: 0.2028302, g: 0.84994453, b: 1, a: 1}
   emissionIntensity: 3
 --- !u!65 &1571115563
 BoxCollider:

@@ -9,15 +9,18 @@ public class Brick : MonoBehaviour
     float destroyTime = 0.2f;
     float changeMaterialTime = 0.05f;
     public ParticleSystem brickExplosion;
+    Animator animator;
 
     private void Start()
     {
         brickMaterial = GetComponent<Renderer>().material;
+        animator = GetComponent<Animator>();
     }
 
     public void HitBrick()
     {
         hitCount++;
+        animator.SetTrigger("isHit");
         if (hitCount >= 3)
         {
             DestroyBrick();

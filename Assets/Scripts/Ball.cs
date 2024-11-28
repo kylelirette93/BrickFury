@@ -29,6 +29,13 @@ public class Ball : MonoBehaviour
     Animator animator;
     PlayerController playerController;
 
+    // Ball glow variables.
+    private Material ballMaterial;
+    private Color originalEmissionColor;
+    public Color hitEmissionColor;
+    public float emissionIntensity;
+    private bool isHit = false;
+
 
 
     private void Start()
@@ -48,6 +55,9 @@ public class Ball : MonoBehaviour
 
         // Get the player controller component.
         playerController = GameObject.FindWithTag(playerTag).GetComponent<PlayerController>();
+
+        ballMaterial = GetComponent<Renderer>().material;
+        originalEmissionColor = ballMaterial.GetColor("_EmissionColor");
     }
 
     
@@ -139,6 +149,7 @@ public class Ball : MonoBehaviour
                 transform.position = hit.point + hit.normal * radius;
                 if (Time.time - lastShakeTime >= shakeCooldown)
                 {
+                    BallHit();
                     playerController.OnPaddleHit();
                     animator.SetTrigger("isHit");
                     StartCoroutine(ShakeScreen());
@@ -148,6 +159,35 @@ public class Ball : MonoBehaviour
         }
     }
 
+    void BallHit()
+    {
+        if (!isHit)
+        {
+            isHit = true;
+            StartCoroutine(BallGlow());
+        }
+    }
+
+    IEnumerator BallGlow()
+    {
+        float elapsedTime = 0f;
+        // Duration of the glow effect
+        float duration = 0.3f;
+
+        // Handle emission over a duration to create a consistent glow effect.
+        while (elapsedTime < duration)
+        {
+            float lerpFactor = Mathf.PingPong(elapsedTime * 2, 1);
+            Color emissionColor = Color.Lerp(hitEmissionColor * emissionIntensity, originalEmissionColor, lerpFactor);
+            ballMaterial.SetColor("_EmissionColor", emissionColor);
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        ballMaterial.SetColor("_EmissionColor", originalEmissionColor);
+        isHit = false;
+    }
     IEnumerator ShakeScreen()
     {
         isShaking = true;
