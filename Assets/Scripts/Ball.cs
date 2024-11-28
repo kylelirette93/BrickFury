@@ -26,6 +26,8 @@ public class Ball : MonoBehaviour
     private float shakeCooldown = 0.2f;
     private float lastShakeTime = 0f;
 
+    Animator animator;
+    PlayerController playerController;
 
 
 
@@ -40,6 +42,12 @@ public class Ball : MonoBehaviour
         // Get the camera transform.
         cameraTransform = Camera.main.transform;
         originalCameraPosition = cameraTransform.localPosition;
+        
+        // Get the animator component.
+        animator = GetComponent<Animator>();
+
+        // Get the player controller component.
+        playerController = GameObject.FindWithTag(playerTag).GetComponent<PlayerController>();
     }
 
     
@@ -75,6 +83,7 @@ public class Ball : MonoBehaviour
 
                 if (Time.time - lastShakeTime >= shakeCooldown)
                 {
+                    animator.SetTrigger("isHit");
                     StartCoroutine(ShakeScreen());
                     lastShakeTime = Time.time;
                 }
@@ -94,6 +103,7 @@ public class Ball : MonoBehaviour
 
                 if (Time.time - lastShakeTime >= shakeCooldown)
                 {
+                    animator.SetTrigger("isHit");
                     StartCoroutine(ShakeScreen());
                     lastShakeTime = Time.time;
                 }
@@ -129,6 +139,8 @@ public class Ball : MonoBehaviour
                 transform.position = hit.point + hit.normal * radius;
                 if (Time.time - lastShakeTime >= shakeCooldown)
                 {
+                    playerController.OnPaddleHit();
+                    animator.SetTrigger("isHit");
                     StartCoroutine(ShakeScreen());
                     lastShakeTime = Time.time;
                 }

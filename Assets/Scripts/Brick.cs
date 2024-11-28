@@ -6,6 +6,9 @@ public class Brick : MonoBehaviour
 {
     int hitCount = 0;
     Material brickMaterial;
+    float destroyTime = 0.2f;
+    float changeMaterialTime = 0.05f;
+    public ParticleSystem brickExplosion;
 
     private void Start()
     {
@@ -15,8 +18,15 @@ public class Brick : MonoBehaviour
     public void HitBrick()
     {
         hitCount++;
-        brickMaterial.color = Color.white;
-        Invoke("ChangeMaterialColor", 0.05f);      
+        if (hitCount >= 3)
+        {
+            DestroyBrick();
+        }
+        else
+        {
+            brickMaterial.color = Color.white;
+            Invoke("ChangeMaterialColor", changeMaterialTime);
+        }   
     }
 
     void ChangeMaterialColor()
@@ -28,12 +38,18 @@ public class Brick : MonoBehaviour
         else if (hitCount == 2)
         {
             brickMaterial.color = Color.red;
-            Debug.Log("Color is: " + brickMaterial.color);
+            // Debug.Log("Color is: " + brickMaterial.color);
         }
         else if (hitCount == 3)
         {
-            Destroy(gameObject);
+            DestroyBrick();
         }
+    }
+
+    void DestroyBrick()
+    {
+        GameObject.Instantiate(brickExplosion, transform.position, Quaternion.identity);
+        Destroy(gameObject, destroyTime);
     }
 }
 
