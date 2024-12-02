@@ -9,12 +9,14 @@ public class Brick : MonoBehaviour
     float destroyTime = 0.2f;
     float changeMaterialTime = 0.05f;
     public ParticleSystem brickExplosion;
+    AudioSource brickExplosionSound;
     Animator animator;
 
     private void Start()
     {
         brickMaterial = GetComponent<Renderer>().material;
         animator = GetComponent<Animator>();
+        brickExplosionSound = GetComponent<AudioSource>();
     }
 
     public void HitBrick()
@@ -51,6 +53,7 @@ public class Brick : MonoBehaviour
 
     void DestroyBrick()
     {
+        brickExplosionSound.Play();
         GameObject.Instantiate(brickExplosion, transform.position, Quaternion.identity);
         Destroy(gameObject, destroyTime);
     }
