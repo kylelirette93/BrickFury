@@ -1,18 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Rendering;
 using UnityEngine;
-
 public class Ball : MonoBehaviour
 {
-    public float speed = 3f;
-    float radius = 0.25f;
-    string brickTag = "Brick";
-    string wallTag = "Wall";
-    string playerTag = "Player";
-    float initialZPos;
-    float minVerticalSpeed = 0.5f;
-
+    public float speed = 3f; float radius = 0.25f; string brickTag = "Brick"; string wallTag = "Wall"; string playerTag = "Player"; float initialZPos; float minVerticalSpeed = 0.5f;
     Vector3 desiredDirection;
     Vector3 lastHitPoint;
 
@@ -38,8 +31,11 @@ public class Ball : MonoBehaviour
     public AudioSource brickHit;
     bool canMove = false;
 
-    // Variables for trajectory line.
-    public LineRenderer lineRenderer;
+    // Variables for countdown at start.
+    TextMeshProUGUI countDownText;
+
+    // Highlight normal vector of surface being hit with particles.
+    public GameObject hitParticleSystemPrefab;
 
 
     private void Start()
@@ -66,7 +62,8 @@ public class Ball : MonoBehaviour
         // Give the ball a player a second before ball comes in.
         if (GameManager.instance.lives == 3)
         {
-            canMove = true;
+            StartCoroutine(CountDownRoutine());
+            Invoke("EnableMovement", 4f);
         }
         else
         {
@@ -79,7 +76,33 @@ public class Ball : MonoBehaviour
         canMove = true;
     }
 
-    
+    IEnumerator CountDownRoutine()
+    {
+        countDownText = GameObject.Find("Canvas").transform.Find("CountDownText").GetComponent<TextMeshProUGUI>();
+        countDownText.gameObject.SetActive(true);
+        int countDownTimer = 3;
+
+        while (countDownTimer > 0)
+        {
+            countDownText.text = countDownTimer.ToString();
+            yield return new WaitForSeconds(1);
+            countDownTimer--;
+        }
+
+        // Adjust the position for "GO!" text
+        RectTransform rectTransform = countDownText.GetComponent<RectTransform>();
+        Vector3 originalPosition = rectTransform.anchoredPosition;
+        rectTransform.anchoredPosition = new Vector3(originalPosition.x - 50, originalPosition.y, originalPosition.z); // Adjust the x value as needed
+
+        countDownText.text = "GO!";
+        yield return new WaitForSeconds(1f);
+
+        // Reset the position after displaying "GO!"
+        rectTransform.anchoredPosition = originalPosition;
+        countDownText.gameObject.SetActive(false);
+    }
+
+
 
     void Update()
     {
@@ -103,92 +126,62 @@ public class Ball : MonoBehaviour
             RaycastHit hit;
             if (Physics.SphereCast(transform.position, radius, desiredDirection, out hit, movement.magnitude + radius))
             {
-                if (hit.collider.CompareTag(wallTag))
+                if (hit.collider.CompareTag(wallTag) || hit.collider.CompareTag(brickTag) || hit.collider.CompareTag(playerTag))
                 {
                     Vector3 collisionNormal = hit.normal;
-                    // Apply reflection to the desired direction and normalize it to maintain speed.
-                    desiredDirection = Vector3.Reflect(desiredDirection, collisionNormal).normalized;
+                    Vector3 reflectedDirection = Vector3.Reflect(desiredDirection, collisionNormal).normalized;
 
-
-                    if (Mathf.Abs(desiredDirection.y) < minVerticalSpeed)
+                    if (Mathf.Abs(reflectedDirection.y) < minVerticalSpeed)
                     {
-                        // Return a unit vector depending on y direction, to avoid getting stuck.
-                        desiredDirection.y = Mathf.Sign(desiredDirection.y) * minVerticalSpeed;
+                        reflectedDirection.y = Mathf.Sign(reflectedDirection.y) * minVerticalSpeed;
                     }
 
-                    brickHit.Play();
-                    transform.position = hit.point + hit.normal * radius;
-
-                    if (Time.time - lastShakeTime >= shakeCooldown)
+                    if (hit.collider.CompareTag(wallTag))
                     {
-                        animator.SetTrigger("isHit");
-                        StartCoroutine(ShakeScreen());
-                        lastShakeTime = Time.time;
+                        brickHit.Play();
                     }
-                }
-                else if (hit.collider.CompareTag(brickTag))
-                {
-                    Vector3 collisionNormal = hit.normal;
-                    Vector3 particleDirection = collisionNormal;
-                    desiredDirection = Vector3.Reflect(desiredDirection, collisionNormal).normalized;
-
-                    if (Mathf.Abs(desiredDirection.y) < minVerticalSpeed)
+                    else if (hit.collider.CompareTag(brickTag))
                     {
-                        desiredDirection.y = Mathf.Sign(desiredDirection.y) * minVerticalSpeed;
+                        hit.collider.GetComponent<Brick>().HitBrick(collisionNormal);
+                        brickHit.Play();
                     }
-
-                    hit.collider.GetComponent<Brick>().HitBrick(particleDirection);
-                    brickHit.Play();
-                    transform.position = hit.point + hit.normal * radius;
-
-                    if (Time.time - lastShakeTime >= shakeCooldown)
+                    else if (hit.collider.CompareTag(playerTag))
                     {
-                        animator.SetTrigger("isHit");
-                        StartCoroutine(ShakeScreen());
-                        lastShakeTime = Time.time;
-                    }
-                }
-                else if (hit.collider.CompareTag(playerTag))
-                {
-                    Transform paddle = hit.collider.transform;
-
-                    // Get the paddle's width.
-                    float paddleWidth = paddle.localScale.x;
-
-                    // Get distance from the hit point to the paddle's center.
-                    float relativePosition = hit.point.x - paddle.position.x;
-
-                    // Get the normalized hit offset, by dividing by half the paddle width.
-                    float hitOffset = relativePosition / (paddleWidth / 2);
-
-                    // Reflect the ball.
-                    Vector3 collisionNormal = Vector3.up;
-                    desiredDirection = Vector3.Reflect(desiredDirection, collisionNormal);
-
-                    desiredDirection.x += hitOffset;
-
-                    if (Mathf.Abs(desiredDirection.y) < minVerticalSpeed)
-                    {
-                        desiredDirection.y = Mathf.Sign(desiredDirection.y) * minVerticalSpeed;
-                    }
-
-                    // Maintain speed of the ball by normalizing the direction
-                    desiredDirection = desiredDirection.normalized;
-
-                    lastHitPoint = hit.point;
-                    transform.position = hit.point + hit.normal * radius;
-                    if (Time.time - lastShakeTime >= shakeCooldown)
-                    {
+                        Transform paddle = hit.collider.transform;
+                        float paddleWidth = paddle.localScale.x;
+                        float relativePosition = hit.point.x - paddle.position.x;
+                        float hitOffset = relativePosition / (paddleWidth / 2);
+                        reflectedDirection.x += hitOffset;
+                        reflectedDirection = reflectedDirection.normalized;
                         paddleHit.Play();
                         BallHit();
                         playerController.OnPaddleHit();
+                    }
+
+                    desiredDirection = reflectedDirection;
+                    transform.position = hit.point + hit.normal * radius;
+
+                    if (Time.time - lastShakeTime >= shakeCooldown)
+                    {
                         animator.SetTrigger("isHit");
                         StartCoroutine(ShakeScreen());
                         lastShakeTime = Time.time;
                     }
+
+                    // Call the method to handle the collision and instantiate the particle system
+                    HandleCollision(hit.point, collisionNormal);
                 }
             }
         }
+    }
+
+    void HandleCollision(Vector3 hitPoint, Vector3 collisionNormal)
+    {
+        // Instantiate the particle system at the hit point
+        GameObject hitParticles = Instantiate(hitParticleSystemPrefab, hitPoint, Quaternion.LookRotation(collisionNormal));
+
+        // Optionally, destroy the particle system after a short duration
+        Destroy(hitParticles, 2f); // Adjust the duration as needed
     }
 
 
