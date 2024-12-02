@@ -19,7 +19,7 @@ public class Brick : MonoBehaviour
         brickExplosionSound = GetComponent<AudioSource>();
     }
 
-    public void HitBrick()
+    public void HitBrick(Vector3 direction)
     {
         hitCount++;
         animator.SetTrigger("isHit");
@@ -51,11 +51,15 @@ public class Brick : MonoBehaviour
         }
     }
 
+   
+
     void DestroyBrick()
     {
         brickExplosionSound.Play();
         GameObject.Instantiate(brickExplosion, transform.position, Quaternion.identity);
         Destroy(gameObject, destroyTime);
     }
+
+   
 }
 

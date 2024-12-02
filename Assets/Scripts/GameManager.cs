@@ -145,5 +145,10 @@ public class GameManager : MonoBehaviour
         ChangeState(GameState.Init);
     }
 
+    public void OnQuitClicked()
+    {
+        Application.Quit();
+    }
+
    
 }

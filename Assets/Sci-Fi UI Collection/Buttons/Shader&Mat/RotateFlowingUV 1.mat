@@ -33,9 +33,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FlowStrength: 0.33
-    - _MaxBrightness: 0.145
-    - _MinBrightness: 0.049
+    - _FlowStrength: 0.023
+    - _MaxBrightness: 0
+    - _MinBrightness: 0.013
     - _RotSpeed: 10
     m_Colors:
     - _FlowColor: {r: 1, g: 0.5615011, b: 0, a: 1}

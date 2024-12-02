@@ -38,6 +38,9 @@ public class Ball : MonoBehaviour
     public AudioSource brickHit;
     bool canMove = false;
 
+    // Variables for trajectory line.
+    public LineRenderer lineRenderer;
+
 
     private void Start()
     {
@@ -126,6 +129,7 @@ public class Ball : MonoBehaviour
                 else if (hit.collider.CompareTag(brickTag))
                 {
                     Vector3 collisionNormal = hit.normal;
+                    Vector3 particleDirection = collisionNormal;
                     desiredDirection = Vector3.Reflect(desiredDirection, collisionNormal).normalized;
 
                     if (Mathf.Abs(desiredDirection.y) < minVerticalSpeed)
@@ -133,7 +137,7 @@ public class Ball : MonoBehaviour
                         desiredDirection.y = Mathf.Sign(desiredDirection.y) * minVerticalSpeed;
                     }
 
-                    hit.collider.GetComponent<Brick>().HitBrick();
+                    hit.collider.GetComponent<Brick>().HitBrick(particleDirection);
                     brickHit.Play();
                     transform.position = hit.point + hit.normal * radius;
 
@@ -187,7 +191,6 @@ public class Ball : MonoBehaviour
         }
     }
 
-   
 
     void BallHit()
     {
