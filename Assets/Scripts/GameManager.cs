@@ -82,10 +82,8 @@ public class GameManager : MonoBehaviour
         {
             case GameState.Menu:
                 menuPanel.SetActive(true);
-                Time.timeScale = 0;
                 break;
             case GameState.Init:
-                Time.timeScale = 1;
                 lives = 3;
                 levelNumber = 1;
                 LoadLevel(levelNumber);
@@ -110,7 +108,6 @@ public class GameManager : MonoBehaviour
             case GameState.GameOver:
                 ClearLevel();
                 gameOverPanel.SetActive(true);
-                Time.timeScale = 0;
                 break;
         }
     }
