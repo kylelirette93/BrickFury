@@ -5,7 +5,13 @@ using UnityEditor.Rendering;
 using UnityEngine;
 public class Ball : MonoBehaviour
 {
-    public float speed = 3f; float radius = 0.25f; string brickTag = "Brick"; string wallTag = "Wall"; string playerTag = "Player"; float initialZPos; float minVerticalSpeed = 0.5f;
+    public float speed = 3f; 
+    float radius = 0.25f; 
+    string brickTag = "Brick"; 
+    string wallTag = "Wall"; 
+    string playerTag = "Player"; 
+    float initialZPos; 
+    float minVerticalSpeed = 0.6f;
     Vector3 desiredDirection;
     Vector3 lastHitPoint;
 
@@ -62,14 +68,18 @@ public class Ball : MonoBehaviour
         originalEmissionColor = ballMaterial.GetColor("_EmissionColor");
 
         // Give the ball a player a second before ball comes in.
-        if (GameManager.instance.lives == 3)
+        if (GameManager.instance.currentState != GameManager.GameState.Win)
         {
-            StartCoroutine(CountDownRoutine());
-            Invoke("EnableMovement", 4f);
-        }
-        else
-        {
-            Invoke("EnableMovement", 1f);
+            // Prevent any count down on the win screen.
+            if (GameManager.instance.lives == 3)
+            {
+                StartCoroutine(CountDownRoutine());
+                Invoke("EnableMovement", 4f);
+            }
+            else
+            {
+                Invoke("EnableMovement", 1f);
+            }
         }
     }
 
@@ -105,7 +115,7 @@ public class Ball : MonoBehaviour
     }
 
 
-
+    int hitCount = 0;
     void Update()
     {
         if (canMove)
@@ -119,6 +129,7 @@ public class Ball : MonoBehaviour
             // Apply contraint to the ball's z position.
             transform.position = new Vector3(transform.position.x, transform.position.y, initialZPos);
 
+            // Check if ball fell below the player.
             if (transform.position.y < -5 && GameManager.instance.currentState != GameManager.GameState.Reset)
             {
                 Destroy(gameObject);
@@ -129,6 +140,7 @@ public class Ball : MonoBehaviour
             RaycastHit hit;
             if (Physics.SphereCast(transform.position, radius, desiredDirection, out hit, movement.magnitude + radius))
             {
+                // Compare this tag to nearby hit collider tags.
                 if (hit.collider.CompareTag(wallTag) || hit.collider.CompareTag(brickTag) || hit.collider.CompareTag(playerTag))
                 {
                     Vector3 collisionNormal = hit.normal;
@@ -165,11 +177,12 @@ public class Ball : MonoBehaviour
 
                     desiredDirection = reflectedDirection;
                     transform.position = hit.point + hit.normal * radius;
+                    hitCount++;
 
                     if (Time.time - lastShakeTime >= shakeCooldown)
                     {
                         animator.SetTrigger("isHit");
-                        StartCoroutine(ShakeScreen());
+                        StartCoroutine(ShakeScreen(hitCount));
                         lastShakeTime = Time.time;
                     }
 
@@ -179,7 +192,7 @@ public class Ball : MonoBehaviour
             }
             // Clamp the ball's position to the screen position.
             Vector3 clampedPosition = new Vector3(transform.position.x, transform.position.y, initialZPos);
-            clampedPosition.x = Mathf.Clamp(clampedPosition.x, -9.5f, 9.5f);
+            clampedPosition.x = Mathf.Clamp(clampedPosition.x, -8.5f, 8.5f);
             clampedPosition.y = Mathf.Clamp(clampedPosition.y, -6f, 5.75f);
             transform.position = clampedPosition;
         }
@@ -224,15 +237,17 @@ public class Ball : MonoBehaviour
         ballMaterial.SetColor("_EmissionColor", originalEmissionColor);
         isHit = false;
     }
-    IEnumerator ShakeScreen()
+    IEnumerator ShakeScreen(float shakeMultiplier)
     {
         isShaking = true;
         float elapsed = 0.0f;
+        // Calculate current magnitude based off of multiplier.
+        float currentShakeMagnitude = shakeMagnitude * shakeMultiplier;
 
         while (elapsed < shakeDuration)
         {
-            float x = Random.Range(-1, 1f) * shakeMagnitude;
-            float y = Random.Range(-1, 1f) * shakeMagnitude;
+            float x = Random.Range(-1, 1f) * currentShakeMagnitude;
+            float y = Random.Range(-1, 1f) * currentShakeMagnitude;
 
             cameraTransform.localPosition = new Vector3(x, originalCameraPosition.y, originalCameraPosition.z);
 
@@ -243,5 +258,7 @@ public class Ball : MonoBehaviour
 
         cameraTransform.localPosition = originalCameraPosition;
         isShaking = false;
+        // Reset hit count to control intensity.
+        hitCount = 1;
     }
 }

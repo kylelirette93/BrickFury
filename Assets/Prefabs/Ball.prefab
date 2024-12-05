@@ -101,7 +101,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 7
   shakeDuration: 0.2
-  shakeMagnitude: 0.05
+  shakeMagnitude: 0.03
   hitEmissionColor: {r: 1, g: 0, b: 0.5458698, a: 0}
   emissionIntensity: 5
   paddleHit: {fileID: 1717385233677653676}

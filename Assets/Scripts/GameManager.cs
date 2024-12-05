@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 using TMPro;
 using UnityEngine.XR;
@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI livesText;
     public TextMeshProUGUI levelText;
     public GameObject gameOverPanel;
+    public GameObject winPanel;
     public GameObject ballPrefab;
     public GameObject playerPrefab;
     public GameObject[] levels;
@@ -28,6 +29,7 @@ public class GameManager : MonoBehaviour
     public AudioClip menuMusic;
     public AudioClip playMusic;
     public AudioClip gameOverMusic;
+    public AudioClip winMusic;
 
     // Position for breakout and resetting ball.
     Vector3 initialPosition = new Vector3(0, 5.3f, 0.3f);
@@ -43,7 +45,8 @@ public class GameManager : MonoBehaviour
         Play,
         LoadLevel,
         Reset,
-        GameOver
+        GameOver,
+        Win,
     }
 
     public GameState currentState;
@@ -67,7 +70,7 @@ public class GameManager : MonoBehaviour
 
     public void ChangeState(GameState newState, float delay = 0)
     {
-        // Prevent from calling load level twice.
+        // Prevent from calling load level twice or loading level on win screen.
         if (isLevelTransitioning && newState == GameState.LoadLevel) return;
         StartCoroutine(ChangeStateCoroutine(newState, delay));
     }
@@ -101,6 +104,10 @@ public class GameManager : MonoBehaviour
                 gameOverPanel.SetActive(false);
                 audioSource.Stop();
                 break;
+            case GameState.Win:
+                winPanel.SetActive(false);
+                audioSource.Stop();
+                break;
 
         }
     }
@@ -132,8 +139,15 @@ public class GameManager : MonoBehaviour
                 {
                     Destroy(ballInstance);
                 }
+                
                 isLevelTransitioning = true;
                 levelNumber++;
+                if (levelNumber > 3)
+                {
+                    isLevelTransitioning = false;
+                    ChangeState(GameState.Win);
+                    return;
+                }
                 UpdateLevelText();
                 LoadLevel(levelNumber);
                 CountBricks();
@@ -160,6 +174,13 @@ public class GameManager : MonoBehaviour
                 audioSource.clip = gameOverMusic;
                 audioSource.Play();
                 break;
+            case GameState.Win:
+                playPanel.SetActive(false);
+                ClearLevel();
+                winPanel.SetActive(true);
+                audioSource.clip = winMusic;
+                audioSource.Play();
+                break;
         }
     }
 
@@ -179,6 +200,10 @@ public class GameManager : MonoBehaviour
 
     public void LoadLevel(int levelNumber)
     {
+        if (levelNumber < 1)
+        {
+            levelNumber = 1;
+        }
         if (levelInstance != null)
         {
             Destroy(levelInstance);
