@@ -27,8 +27,10 @@ public class Ball : MonoBehaviour
     public Color hitEmissionColor;
     public float emissionIntensity;
     private bool isHit = false;
+
     public AudioSource paddleHit;
     public AudioSource brickHit;
+
     bool canMove = false;
 
     // Variables for countdown at start.
@@ -110,6 +112,7 @@ public class Ball : MonoBehaviour
         {
             // Create a movement vector, scaled by speed and time.
             Vector3 movement = desiredDirection * speed * Time.deltaTime;
+
             // Apply movement to the position of the ball.
             transform.position += movement;
 
@@ -143,6 +146,7 @@ public class Ball : MonoBehaviour
                     else if (hit.collider.CompareTag(brickTag))
                     {
                         hit.collider.GetComponent<Brick>().HitBrick(collisionNormal);
+                        brickHit.pitch = 1f;
                         brickHit.Play();
                     }
                     else if (hit.collider.CompareTag(playerTag))
@@ -153,6 +157,7 @@ public class Ball : MonoBehaviour
                         float hitOffset = relativePosition / (paddleWidth / 2);
                         reflectedDirection.x += hitOffset;
                         reflectedDirection = reflectedDirection.normalized;
+                        paddleHit.pitch = 0.8f;
                         paddleHit.Play();
                         BallHit();
                         playerController.OnPaddleHit();
@@ -172,6 +177,11 @@ public class Ball : MonoBehaviour
                     HandleCollision(hit.point, collisionNormal);
                 }
             }
+            // Clamp the ball's position to the screen position.
+            Vector3 clampedPosition = new Vector3(transform.position.x, transform.position.y, initialZPos);
+            clampedPosition.x = Mathf.Clamp(clampedPosition.x, -9.5f, 9.5f);
+            clampedPosition.y = Mathf.Clamp(clampedPosition.y, -6f, 5.75f);
+            transform.position = clampedPosition;
         }
     }
 

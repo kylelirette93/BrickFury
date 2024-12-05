@@ -22,10 +22,11 @@ public class Brick : MonoBehaviour
     public void HitBrick(Vector3 direction)
     {
         hitCount++;
+
         animator.SetTrigger("isHit");
         if (hitCount >= 3)
         {
-            DestroyBrick();
+            DestroyBrick();       
         }
         else
         {
@@ -51,15 +52,31 @@ public class Brick : MonoBehaviour
         }
     }
 
-   
+
 
     void DestroyBrick()
     {
         brickExplosionSound.Play();
-        GameObject.Instantiate(brickExplosion, transform.position, Quaternion.identity);
-        Destroy(gameObject, destroyTime);
+        Instantiate(brickExplosion, transform.position, Quaternion.identity);
+
+        // Defer destruction and counting
+        StartCoroutine(HandleBrickDestruction());
     }
 
-   
+    IEnumerator HandleBrickDestruction()
+    {
+        yield return new WaitForSeconds(destroyTime);
+
+        GameManager.instance.totalBricks--;
+
+        // Check if the level is complete after decrement
+        if (GameManager.instance.currentState == GameManager.GameState.Play
+            && GameManager.instance.totalBricks <= 0)
+        {
+            GameManager.instance.ChangeState(GameManager.GameState.LoadLevel);
+        }
+
+        Destroy(gameObject);
+    }
 }
 
