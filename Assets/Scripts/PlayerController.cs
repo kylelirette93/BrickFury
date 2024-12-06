@@ -6,8 +6,8 @@ public class PlayerController : MonoBehaviour
 {
     public float movementSpeed;
     Camera mainCamera;
-    float minScreenWidth = -7.86f;
-    float maxScreenWidth = 7.86f;
+    float minScreenWidth = -7.5f;
+    float maxScreenWidth = 7.5f;
 
     private Material paddleMaterial;
     private Color originalEmissionColor;
